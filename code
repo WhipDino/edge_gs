@@ -1,0 +1,92 @@
+#include <LiquidCrystal.h>
+
+const int rs = 12, en = 11, d4 = 5, d5 = 4, d6 = 3, d7 = 2;
+LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
+
+#include <Servo.h>
+int servoPin = 6;
+Servo servoMotor;
+
+int valorUmidade = 0;
+
+const int motorPin1 = 10;
+const int motorPin2 = 13;
+
+int ledyellow = 9;
+int ledgreen = 8;
+int ledred = 7;
+
+void setup() 
+{
+  Serial.begin(9600);
+  lcd.begin(16, 2);
+  pinMode(ledyellow, OUTPUT);
+  pinMode(ledgreen, OUTPUT);
+  pinMode(ledred, OUTPUT);
+  pinMode(servoPin, OUTPUT);
+  servoMotor.attach(servoPin);
+  pinMode(motorPin1, OUTPUT);
+  pinMode(motorPin2, OUTPUT);
+}
+
+void loop() 
+{
+    valorUmidade = analogRead(A0);
+
+  int percentage = map(valorUmidade, 0, 876, 0, 100);
+
+  if(percentage > 82)
+  {
+      digitalWrite(ledyellow, HIGH);
+    digitalWrite(ledgreen, LOW);
+    digitalWrite(ledred, LOW);
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("Umidade Alta");
+    digitalWrite(motorPin1, HIGH);
+    digitalWrite(motorPin2, LOW);
+    delay(50);
+    digitalWrite(motorPin1, LOW);
+    digitalWrite(motorPin2, HIGH);
+    delay(50);
+  }
+
+  if (percentage >= 15 && percentage <= 82)
+  {
+      digitalWrite(ledyellow, LOW);
+    digitalWrite(ledgreen, HIGH);
+    digitalWrite(ledred, LOW);
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("Umidade OK");
+    digitalWrite(motorPin1, LOW);
+    digitalWrite(motorPin2, LOW);
+    delay(50);
+    digitalWrite(motorPin1, LOW);
+    digitalWrite(motorPin2, LOW);
+    delay(50);
+  }
+
+  if(percentage < 15)
+  {
+      digitalWrite(ledyellow, LOW);
+    digitalWrite(ledgreen, LOW);
+    digitalWrite(ledred, HIGH);
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("Umidade baixa");
+    servoMotor.write(0);
+    delay(800);
+    servoMotor.write(180);
+    delay(800);
+    digitalWrite(motorPin1, LOW);
+    digitalWrite(motorPin2, LOW);
+    delay(50);
+    digitalWrite(motorPin1, LOW);
+    digitalWrite(motorPin2, LOW);
+    delay(50);
+  }
+
+  Serial.print(percentage);
+  Serial.println("%");
+}
